@@ -1,0 +1,106 @@
+# -*- coding: utf-8 -*-
+from flask import Flask
+from flask import request
+import json
+import redis
+import hashlib
+import time
+
+app = Flask(__name__)
+
+r = redis.Redis(host='127.0.0.1', port=6379, password='12345678')
+
+
+def md5(strs):
+    hl = hashlib.md5()
+    hl.update(strs.encode(encoding='utf-8'))
+    return hl.hexdigest()
+
+
+def getAllAppointMentFromRedis(type):
+    data = r.hgetall(type)
+    ret_data = []
+    
+    for n in data.keys():
+        data_one=json.loads(data[n])
+        try:
+            if data_one['status']=='offline':
+                continue
+            else:
+                ret_data.append(data_one)
+        except:
+            ret_data.append(data_one)
+    # ret_data = [json.loads(data[n]) for n in data.keys()]
+    try:
+        ret_data=sorted(ret_data, key=lambda student: student['gmt_create'],reverse=True)
+    except:
+        pass    
+    return ret_data
+
+def add(content, redisName):
+    content = content.decode('utf-8')
+    key = md5(content)
+    data=json.loads(content)
+    data['gmt_create']=time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
+    data['dataId']=key
+    data['status']='online'
+    r.hset(name=redisName, key=key, value=json.dumps(data,ensure_ascii=False))
+
+
+def delFromRedisByIdAndType(types,key):
+    try:
+        data=json.loads(r.hget(types,key))
+        data['status']='offline'
+        r.hset(name=types,key=key,value=json.dumps(data,ensure_ascii=False))
+        ret_code=True
+    except:
+        ret_code=False
+    return ret_code
+
+
+@app.route('/delAppointment.json', methods=['POST'])
+def delAppointment():
+    request_body = request.get_data()
+    request_data=json.loads(request_body)
+    ret_code=delFromRedisByIdAndType(request_data['type'],request_data['dataId'] )
+    
+    return json.dumps({"success":ret_code})
+
+@app.route('/addCar.json', methods=['POST'])
+def addCar():
+    request_body = request.get_data()
+    add(request_body, 'car')
+    return ''
+
+
+@app.route('/addPassenger.json', methods=['POST'])
+def addPassenger():
+    request_body = request.get_data()
+    add(request_body, 'passenger')
+    return ''
+
+
+@app.route('/getPassenger.json', methods=['GET'])
+def getPassenger():
+    ret_data={}
+    ret_data['success']='true'
+    ret_data['data']=getAllAppointMentFromRedis('passenger')
+    return json.dumps(ret_data, ensure_ascii=False) ,{'Content-Type': 'application/json'}
+
+
+@app.route('/getCar.json', methods=['GET'])
+def getCar():
+    ret_data={}
+    ret_data['success']='true'
+    ret_data['data']=getAllAppointMentFromRedis('car')
+    return json.dumps(ret_data, ensure_ascii=False) ,{'Content-Type': 'application/json'}
+
+@app.route('/getNoticebarData.json', methods=['GET'])
+def getNoticebarData():
+    ret_data={}
+    ret_data['success']='true'
+    ret_data['data']=getAllAppointMentFromRedis('notice')[0]
+    return json.dumps(ret_data, ensure_ascii=False) ,{'Content-Type': 'application/json'}
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0',ssl_context='adhoc')
