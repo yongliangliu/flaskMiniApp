@@ -22,7 +22,7 @@ logfile = 'log/debug.log'
 
 chdir = '/home/lyl/pythonService'
 
-daemon = True 
+#daemon = True 
 
 #启动的进程数
 workers = multiprocessing.cpu_count() * 2 + 1 

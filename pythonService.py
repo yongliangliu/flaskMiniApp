@@ -122,7 +122,7 @@ def getNoticebarData():
 def drawText(content,size,x,y,color,canvasObject):
     draw = ImageDraw.Draw(canvasObject)
     fnt = ImageFont.truetype('Hiragino Sans GB.ttc', size)
-    draw.text((x,y),unicode(content,'utf-8'), fill=color,font=fnt)
+    draw.text((x,y),content, fill=color,font=fnt)
     return canvasObject
 
 
