@@ -129,9 +129,9 @@ def drawText(content,size,x,y,color,canvasObject):
 def drawShareImgCar(appoint,key):
     canvas = Image.open("./img/车找人.jpg")
     tel=appoint['tel']
-    fromName=appoint['from']['name']
-    toName=appoint['to']['name']
-    passed=appoint['pass']
+    fromName=cutContent(appoint['from']['name'])
+    toName=cutContent(appoint['to']['name'])
+    passed=cutContent(appoint['pass'])
     earliestDepartureTime=appoint['earliestDepartureTime']
     latestDepartureTime=appoint['latestDepartureTime']
 
@@ -141,20 +141,24 @@ def drawShareImgCar(appoint,key):
         times=earliestDepartureTime+latestDepartureTime
 
     canvas=drawText(content=times,size=30,x=400,y=400,color='#000000',canvasObject=canvas)
-    canvas=drawText(content=passed,size=40,x=320,y=820,color='#000000',canvasObject=canvas)
-    canvas=drawText(content=fromName,size=40,x=320,y=660,color='#000000',canvasObject=canvas)
+    canvas=drawText(content=passed,size=40,x=260,y=822,color='#000000',canvasObject=canvas)
+    canvas=drawText(content=fromName,size=40,x=260,y=665,color='#000000',canvasObject=canvas)
     canvas=drawText(content=tel,size=30,x=400,y=445,color='#000000',canvasObject=canvas)
-    canvas=drawText(content=toName,size=40,x=320,y=975,color='#000000',canvasObject=canvas)
+    canvas=drawText(content=toName,size=40,x=260,y=975,color='#000000',canvasObject=canvas)
 
     canvas.save("./img/"+key+'.jpg')
     #canvas.show()
 
-
+def cutContent(str):
+	if len(str)>18:
+		str=str[:17]+'...'
+	return str
+    
 def drawShareImgPassenger(appoint,key):
     canvas = Image.open("./img/人找车.jpg")
     tel=appoint['tel']
-    fromName=appoint['from']['name']
-    toName=appoint['to']['name']
+    fromName=cutContent(appoint['from']['name'])
+    toName=cutContent(appoint['to']['name'])
     earliestDepartureTime=appoint['earliestDepartureTime']
     latestDepartureTime=appoint['latestDepartureTime']
 
@@ -164,8 +168,8 @@ def drawShareImgPassenger(appoint,key):
         times=earliestDepartureTime+latestDepartureTime
 
     canvas=drawText(content=times,size=30,x=400,y=400,color='#000000',canvasObject=canvas)
-    canvas=drawText(content=toName,size=40,x=320,y=820,color='#000000',canvasObject=canvas)
-    canvas=drawText(content=fromName,size=40,x=320,y=660,color='#000000',canvasObject=canvas)
+    canvas=drawText(content=toName,size=40,x=260,y=822,color='#000000',canvasObject=canvas)
+    canvas=drawText(content=fromName,size=40,x=260,y=665,color='#000000',canvasObject=canvas)
     canvas=drawText(content=tel,size=30,x=400,y=445,color='#000000',canvasObject=canvas)
 
     canvas.save("./img/"+key+'.jpg')
