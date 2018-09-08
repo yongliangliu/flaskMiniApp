@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-from flask import Flask
+from flask import Flask,send_file, send_from_directory
 from flask import request
-import json
+import json,os
 import redis
 import hashlib
 import time
+from PIL import Image,ImageDraw,ImageFont
 
 app = Flask(__name__)
 
@@ -41,10 +42,25 @@ def add(content, redisName):
     content = content.decode('utf-8')
     key = md5(content)
     data=json.loads(content)
+
+    if redisName=='car':
+        drawShareImgCar(data,key)
+    elif redisName=='passenger':
+        drawShareImgPassenger(data,key)
+
+    data['shareImage']='https://lyl.qianqiulin.com/img/'+key+'.jpg'
     data['gmt_create']=time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
     data['dataId']=key
     data['status']='online'
+
     r.hset(name=redisName, key=key, value=json.dumps(data,ensure_ascii=False))
+
+
+
+@app.route('/img/<path:filename>')
+def download_file(filename):
+    directory = './img/'
+    return send_from_directory(directory, filename, as_attachment=True)
 
 
 def delFromRedisByIdAndType(types,key):
@@ -101,6 +117,62 @@ def getNoticebarData():
     ret_data['success']='true'
     ret_data['data']=getAllAppointMentFromRedis('notice')[0]
     return json.dumps(ret_data, ensure_ascii=False) ,{'Content-Type': 'application/json'}
+
+
+def drawText(content,size,x,y,color,canvasObject):
+    draw = ImageDraw.Draw(canvasObject)
+    fnt = ImageFont.truetype('Hiragino Sans GB.ttc', size)
+    draw.text((x,y),unicode(content,'utf-8'), fill=color,font=fnt)
+    return canvasObject
+
+
+def drawShareImgCar(appoint,key):
+    canvas = Image.open("/Users/liuyongliang/Desktop/车找人.jpg")
+    tel=appoint['tel']
+    fromName=appoint['from']['name']
+    toName=appoint['to']['name']
+    passed=appoint['pass']
+    earliestDepartureTime=appoint['earliestDepartureTime']
+    latestDepartureTime=appoint['latestDepartureTime']
+
+    if len(earliestDepartureTime)>0 and len(latestDepartureTime)>0:
+        times=earliestDepartureTime+'-'+latestDepartureTime
+    if len(earliestDepartureTime)==0 or len(latestDepartureTime)==0:
+        times=earliestDepartureTime+latestDepartureTime
+
+    canvas=drawText(content=times,size=30,x=400,y=400,color='#000000',canvasObject=canvas)
+    canvas=drawText(content=passed,size=40,x=320,y=820,color='#000000',canvasObject=canvas)
+    canvas=drawText(content=fromName,size=40,x=320,y=660,color='#000000',canvasObject=canvas)
+    canvas=drawText(content=tel,size=30,x=400,y=445,color='#000000',canvasObject=canvas)
+    canvas=drawText(content=toName,size=40,x=320,y=975,color='#000000',canvasObject=canvas)
+
+    canvas.save("./img/"+key+'.jpg')
+    canvas.show()
+
+
+def drawShareImgPassenger(appoint,key):
+    canvas = Image.open("/Users/liuyongliang/Desktop/车找人.jpg")
+    tel=appoint['tel']
+    fromName=appoint['from']['name']
+    toName=appoint['to']['name']
+    earliestDepartureTime=appoint['earliestDepartureTime']
+    latestDepartureTime=appoint['latestDepartureTime']
+
+    if len(earliestDepartureTime)>0 and len(latestDepartureTime)>0:
+        times=earliestDepartureTime+'-'+latestDepartureTime
+    if len(earliestDepartureTime)==0 or len(latestDepartureTime)==0:
+        times=earliestDepartureTime+latestDepartureTime
+
+    canvas=drawText(content=times,size=30,x=400,y=400,color='#000000',canvasObject=canvas)
+    canvas=drawText(content=toName,size=40,x=320,y=820,color='#000000',canvasObject=canvas)
+    canvas=drawText(content=fromName,size=40,x=320,y=660,color='#000000',canvasObject=canvas)
+    canvas=drawText(content=tel,size=30,x=400,y=445,color='#000000',canvasObject=canvas)
+
+    canvas.save("./img/"+key+'.jpg')
+    canvas.show()
+
+
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0',ssl_context='adhoc')
