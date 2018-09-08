@@ -127,7 +127,7 @@ def drawText(content,size,x,y,color,canvasObject):
 
 
 def drawShareImgCar(appoint,key):
-    canvas = Image.open("/Users/liuyongliang/Desktop/车找人.jpg")
+    canvas = Image.open("./img/车找人.jpg")
     tel=appoint['tel']
     fromName=appoint['from']['name']
     toName=appoint['to']['name']
@@ -151,7 +151,7 @@ def drawShareImgCar(appoint,key):
 
 
 def drawShareImgPassenger(appoint,key):
-    canvas = Image.open("/Users/liuyongliang/Desktop/车找人.jpg")
+    canvas = Image.open("./img/车找人.jpg")
     tel=appoint['tel']
     fromName=appoint['from']['name']
     toName=appoint['to']['name']
