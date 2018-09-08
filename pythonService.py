@@ -147,7 +147,7 @@ def drawShareImgCar(appoint,key):
     canvas=drawText(content=toName,size=40,x=320,y=975,color='#000000',canvasObject=canvas)
 
     canvas.save("./img/"+key+'.jpg')
-    canvas.show()
+    #canvas.show()
 
 
 def drawShareImgPassenger(appoint,key):
@@ -169,7 +169,7 @@ def drawShareImgPassenger(appoint,key):
     canvas=drawText(content=tel,size=30,x=400,y=445,color='#000000',canvasObject=canvas)
 
     canvas.save("./img/"+key+'.jpg')
-    canvas.show()
+    #canvas.show()
 
 
 
