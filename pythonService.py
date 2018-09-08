@@ -151,7 +151,7 @@ def drawShareImgCar(appoint,key):
 
 
 def drawShareImgPassenger(appoint,key):
-    canvas = Image.open("./img/车找人.jpg")
+    canvas = Image.open("./img/人找车.jpg")
     tel=appoint['tel']
     fromName=appoint['from']['name']
     toName=appoint['to']['name']
