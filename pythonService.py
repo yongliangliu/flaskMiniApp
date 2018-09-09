@@ -118,7 +118,7 @@ def getCar():
 def getNoticebarData():
     ret_data={}
     ret_data['success']='true'
-    ret_data['data']=getAllAppointMentFromRedis('notice')[0]
+    ret_data['data']=getAllAppointMentFromRedis('notice',area='all')[0]
     return json.dumps(ret_data, ensure_ascii=False) ,{'Content-Type': 'application/json'}
 
 
