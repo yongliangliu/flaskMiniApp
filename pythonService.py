@@ -18,24 +18,24 @@ def md5(strs):
     return hl.hexdigest()
 
 
-def getAllAppointMentFromRedis(type):
+def getAllAppointMentFromRedis(type,area):
     data = r.hgetall(type)
     ret_data = []
-    
+
     for n in data.keys():
         data_one=json.loads(data[n])
-        try:
-            if data_one['status']=='offline':
-                continue
-            else:
+        if data_one['status']=='offline':
+            continue
+        else:
+            if area=='all' or area==None:
                 ret_data.append(data_one)
-        except:
-            ret_data.append(data_one)
-    # ret_data = [json.loads(data[n]) for n in data.keys()]
-    try:
-        ret_data=sorted(ret_data, key=lambda student: student['gmt_create'],reverse=True)
-    except:
-        pass    
+            else:
+                if 'area' in data_one.keys():
+                    if data_one['area']==area:
+                        ret_data.append(data_one)
+    
+    ret_data=sorted(ret_data, key=lambda student: student['gmt_create'],reverse=True)
+      
     return ret_data
 
 def add(content, redisName):
@@ -98,17 +98,20 @@ def addPassenger():
 
 @app.route('/getPassenger.json', methods=['GET'])
 def getPassenger():
+    area = request.args.get('area')
     ret_data={}
     ret_data['success']='true'
-    ret_data['data']=getAllAppointMentFromRedis('passenger')
+    ret_data['data']=getAllAppointMentFromRedis('passenger',area=area)
     return json.dumps(ret_data, ensure_ascii=False) ,{'Content-Type': 'application/json'}
 
 
 @app.route('/getCar.json', methods=['GET'])
 def getCar():
+    area = request.args.get('area')
+    orderBy=request.args.get('orderBy')
     ret_data={}
     ret_data['success']='true'
-    ret_data['data']=getAllAppointMentFromRedis('car')
+    ret_data['data']=getAllAppointMentFromRedis(type='car',area=area)
     return json.dumps(ret_data, ensure_ascii=False) ,{'Content-Type': 'application/json'}
 
 @app.route('/getNoticebarData.json', methods=['GET'])
