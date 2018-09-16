@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-from flask import Flask,send_file, send_from_directory
+from flask import Flask,send_file, send_from_directory,jsonify
 from flask import request
 import json,os
 import redis
 import hashlib
 import time
 from PIL import Image,ImageDraw,ImageFont
+from redisco import models
 
 app = Flask(__name__)
 
@@ -178,6 +179,56 @@ def drawShareImgPassenger(appoint,key):
     canvas.save("./img/"+key+'.jpg')
     #canvas.show()
 
+@app.route('/api/login.json', methods=['POST'])
+def login():
+    request_body = request.get_data()
+    request_data = json.loads(request_body)
+
+    token = request_data['token']
+
+    userNow = UserModel.objects.filter(openid=token)
+
+    if not userNow:
+        JSCODE = request_data['code']
+        APPID = 'wx17bb70bf8838e26a'
+        SECRET = 'f0535a7ebe9e43e0b9584d613d59e814'
+        url = 'https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code' % (
+            APPID, SECRET, JSCODE)
+
+        jscode2session = json.loads(requests.post(url).content)
+        openid = jscode2session['openid']
+
+        user = UserModel(openid=openid)
+        user.save()
+
+        return jsonify({'success': True, 'ret_code': '', 'data': {'token': openid, 'userInfo': user.attributes_dict}})
+    else:
+        return jsonify(
+            {'success': True, 'ret_code': '', 'data': {'token': token, 'userInfo': userNow[0].attributes_dict}})
+
+
+@app.route('/api/userInfo.json', methods=['POST'])
+def updateUserInfo():
+    request_body = request.get_data()
+    request_data = json.loads(request_body)
+
+    token = request_data['token']
+    tel = request_data['tel']
+
+    userNow = UserModel.objects.filter(openid=token)[0]
+
+    userNow.tel = tel
+    userNow.save()
+
+    return jsonify({'success': True, 'ret_code': '', 'data': {'token': token, 'userInfo': userNow.attributes_dict}})
+
+
+class UserModel(models.Model):
+    userName = models.Attribute()
+    gmtCreate = models.DateTimeField(auto_now_add=True)
+    passWord = models.Attribute()
+    openid = models.Attribute()
+    tel=models.Attribute()
 
 
 
