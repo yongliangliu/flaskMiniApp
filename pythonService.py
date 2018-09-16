@@ -8,6 +8,7 @@ import time
 from PIL import Image,ImageDraw,ImageFont
 from redisco import models
 import redisco
+import requests
 
 
 redisco.connection_setup(host='qianqiulin.com', port=6379, password='12345678')
