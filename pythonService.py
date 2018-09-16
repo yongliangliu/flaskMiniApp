@@ -239,7 +239,13 @@ class UserModel(models.Model):
     openid = models.Attribute()
     tel=models.Attribute()
 
+@sockets.route('/echo')
+def echo_socket(ws):
+    while not ws.closed:
 
+        now = '我在这里'
+        ws.send(now)  #发送数据
+        time.sleep(1)
 
 if __name__ == '__main__':
 #     app.run(host='0.0.0.0',ssl_context='adhoc')
