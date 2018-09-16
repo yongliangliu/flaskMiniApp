@@ -10,11 +10,14 @@ from redisco import models
 import redisco
 import requests
 
+from flask_sockets import Sockets
+
 
 redisco.connection_setup(host='qianqiulin.com', port=6379, password='12345678')
 
 
 app = Flask(__name__)
+sockets = Sockets(app)
 
 r = redis.Redis(host='127.0.0.1', port=6379, password='12345678')
 
@@ -239,4 +242,10 @@ class UserModel(models.Model):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0',ssl_context='adhoc')
+#     app.run(host='0.0.0.0',ssl_context='adhoc')
+    from gevent import pywsgi
+    from geventwebsocket.handler import WebSocketHandler
+
+
+    server = pywsgi.WSGIServer(('', 8888), app, handler_class=WebSocketHandler)
+    server.serve_forever()
