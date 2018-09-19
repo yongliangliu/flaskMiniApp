@@ -256,4 +256,4 @@ if __name__ == '__main__':
 #     server = pywsgi.WSGIServer(('', 8888), app, handler_class=WebSocketHandler)
 #     server.serve_forever()
 
-    socketio.run(app, host='0.0.0.0', port=8088, debug=True)
+    socketio.run(app, host='0.0.0.0', port=8888, debug=True)
