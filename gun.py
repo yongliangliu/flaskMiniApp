@@ -27,8 +27,8 @@ daemon = True
 #启动的进程数
 workers = multiprocessing.cpu_count() * 2 + 1
 #worker_class = 'gunicorn.workers.ggevent.GeventWorker'
-#worker_class='geventwebsocket.gunicorn.workers.GeventWebSocketWorker'
-worker_class = 'flask_sockets.worker'
+worker_class='geventwebsocket.gunicorn.workers.GeventWebSocketWorker'
+#worker_class = 'flask_sockets.worker'
 threads = 4
 
 x_forwarded_for_header = 'X-FORWARDED-FOR'
