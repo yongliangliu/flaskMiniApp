@@ -10,14 +10,14 @@ from redisco import models
 import redisco
 import requests
 
-from flask_sockets import Sockets
+from flask_socketio import SocketIO, rooms
 
 
 redisco.connection_setup(host='qianqiulin.com', port=6379, password='12345678')
 
 
 app = Flask(__name__)
-sockets = Sockets(app)
+socketio = SocketIO(app)
 
 r = redis.Redis(host='127.0.0.1', port=6379, password='12345678')
 
@@ -239,19 +239,21 @@ class UserModel(models.Model):
     openid = models.Attribute()
     tel=models.Attribute()
 
-@sockets.route('/echo')
-def echo_socket(ws):
-    while not ws.closed:
+@socketio.on('chat_send')
+def chat_send(json):
+    room_id = None
+    if json.get('room_id', None):
+        room_id = json['room_id']
 
-        now = '我在这里'
-        ws.send(now)  #发送数据
-        time.sleep(1)
+    socketio.emit('chat_recv_{room_id}'.format(room_id=room_id), json)
 
 if __name__ == '__main__':
 #     app.run(host='0.0.0.0',ssl_context='adhoc')
-    from gevent import pywsgi
-    from geventwebsocket.handler import WebSocketHandler
+#     from gevent import pywsgi
+#     from geventwebsocket.handler import WebSocketHandler
 
 
-    server = pywsgi.WSGIServer(('', 8888), app, handler_class=WebSocketHandler)
-    server.serve_forever()
+#     server = pywsgi.WSGIServer(('', 8888), app, handler_class=WebSocketHandler)
+#     server.serve_forever()
+
+    socketio.run(app, host='0.0.0.0', port=8088, debug=True)
