@@ -9,8 +9,7 @@ from PIL import Image,ImageDraw,ImageFont
 from redisco import models
 import redisco
 import requests
-
-from flask_socketio import SocketIO, rooms
+from flask_socketio import SocketIO, rooms, join_room, leave_room
 
 
 redisco.connection_setup(host='qianqiulin.com', port=6379, password='12345678')
@@ -216,36 +215,169 @@ def login():
             {'success': True, 'ret_code': '', 'data': {'token': token, 'userInfo': userNow[0].attributes_dict}})
 
 
+
+
 @app.route('/api/userInfo.json', methods=['POST'])
 def updateUserInfo():
     request_body = request.get_data()
     request_data = json.loads(request_body)
 
     token = request_data['token']
-    tel = request_data['tel']
+    userNow = UserModel.objects.get_by_id(UserModel.objects.filter(openid=token)[0].id)
 
-    userNow = UserModel.objects.filter(openid=token)[0]
 
+    province = request_data['userInfo']['province']
+    city = request_data['userInfo']['city']
+    language = request_data['userInfo']['language']
+    avatarUrl = request_data['userInfo']['avatarUrl']
+    gender = request_data['userInfo']['gender']
+    country = request_data['userInfo']['country']
+    nickName=request_data['userInfo']['nickName']
+    try:
+        tel=request_data['tel']
+    except:
+        tel=''
+    
+   
+    userNow.province=province
+    userNow.province = province
+    userNow.city = city
+    userNow.language = language
+    userNow.avatarUrl = avatarUrl
+    userNow.gender = str(gender)
+    userNow.country = country
+    userNow.nickName = nickName
     userNow.tel = tel
-    userNow.save()
 
+    userNow.save()    
     return jsonify({'success': True, 'ret_code': '', 'data': {'token': token, 'userInfo': userNow.attributes_dict}})
 
 
 class UserModel(models.Model):
-    userName = models.Attribute()
-    gmtCreate = models.DateTimeField(auto_now_add=True)
-    passWord = models.Attribute()
+
+    gmtCreate = models.Attribute()
     openid = models.Attribute()
+    nickName= models.Attribute()
+    avatarUrl= models.Attribute()
+    province= models.Attribute()
+    city= models.Attribute()
+    gender= models.Attribute()
+    country= models.Attribute()
+    language= models.Attribute()
+
     tel=models.Attribute()
 
-@socketio.on('chat_send')
-def chat_send(json):
-    room_id = None
-    if json.get('room_id', None):
-        room_id = json['room_id']
 
-    socketio.emit('chat_recv_{room_id}'.format(room_id=room_id), json)
+class RoomModel(models.Model):
+    roomId=models.Attribute()
+    gmtCreate = models.DateTimeField(auto_now_add=True)
+    users = models.ListField(str)
+
+
+
+
+@socketio.on('joined')
+def chat_joined(message):
+    room_id = message['roomId']
+    open_id =  message['openid']
+    userInfo = UserModel.objects.filter(openid=open_id)[0]
+
+    roomNow = RoomModel.objects.filter(roomId=room_id)
+
+    if roomNow:
+        room=RoomModel.objects.filter(roomId=room_id)[0]
+        if userInfo.openid not in room.users:
+            room.users.append(userInfo.openid)
+            room.save()
+        room_members_cnt=len(room.users)+1
+        app.logger.debug(room)
+        
+    else:
+        room=RoomModel(roomId=room_id)
+        room_members_cnt=1
+        room.users.append(userInfo.openid)
+        room.save()
+        # app.logger.debug('fffff'+room.attributes_dict)
+
+    ret_data={}
+    ret_data['userInfo']=userInfo.attributes_dict
+    ret_data['message']=u'{nickName}已加入，当前在线{room_members_cnt}人'.format(nickName=userInfo.nickName,room_members_cnt=room_members_cnt)
+
+    app.logger.debug(ret_data)
+
+    join_room(room_id)
+    socketio.emit('status', ret_data,room=room_id)
+
+
+@socketio.on('left')
+def chat_left(message):
+
+
+    room_id = message['roomId']
+    open_id =  message['openid']
+    userInfo = UserModel.objects.filter(openid=open_id)[0]
+
+    roomNow = RoomModel.objects.filter(roomId=room_id)
+
+    if roomNow:
+        room=RoomModel.objects.filter(roomId=room_id)[0]
+        if userInfo.openid not in room.users:
+            room.users=list(set(room.users))-list(set([userInfo.openid]))
+            room.save()
+        room_members_cnt=len(room.users)+1
+        app.logger.debug(room)
+        
+    else:
+        room=RoomModel(roomId=room_id)
+        room_members_cnt=1
+        room.users.append(userInfo.openid)
+        room.save()
+
+    ret_data={}
+    ret_data['userInfo']=userInfo.attributes_dict
+    ret_data['message']=u'{nickName}已离开，当前在线{room_members_cnt}人'.format(nickName=userInfo.nickName,room_members_cnt=room_members_cnt)
+
+
+    leave_room(room)
+    socketio.emit('status', ret_data,room=room_id)
+
+
+
+
+@socketio.on('text')
+def chat_text(message):
+
+    room_id = message['roomId']
+    open_id =  message['openid']
+    userInfo = UserModel.objects.filter(openid=open_id)[0]
+
+    roomNow = RoomModel.objects.filter(roomId=room_id)
+
+    if roomNow:
+        room=RoomModel.objects.filter(roomId=room_id)[0]
+        if userInfo.openid not in room.users:
+            room.users.append(userInfo.openid)
+            room.save()
+        room_members_cnt=len(room.users)+1
+        app.logger.debug(room)
+        
+    else:
+        room=RoomModel(roomId=room_id)
+        room_members_cnt=1
+        room.users.append(userInfo.openid)
+        room.save()
+
+    ret_data={}
+    ret_data['userInfo']=userInfo.attributes_dict
+    ret_data['message']=message['message']
+    ret_data['gmtCreate']=message['gmtCreate']
+    ret_data['id']=message['id']
+    ret_data['type']=message['type']
+    ret_data['roomId']=message['roomId']
+
+    app.logger.debug(ret_data)
+
+    socketio.emit('text', ret_data,room=room_id)
 
 if __name__ == '__main__':
 #     app.run(host='0.0.0.0',ssl_context='adhoc')
