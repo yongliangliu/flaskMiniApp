@@ -377,6 +377,87 @@ def chat_text(message):
 
     socketio.emit('text', ret_data,room=room_id)
 
+
+class commentModel(models.Model):
+    comentType=models.Attribute()
+    author = models.Attribute()
+    message = models.Attribute()
+    gmtCreate = models.DateTimeField(auto_now_add=True)
+
+
+
+class ContentModel(models.Model):
+    contentId=models.Attribute()
+    gmtCreate = models.DateTimeField(auto_now_add=True)
+    author = UserModel
+    comentList=models.ListField(commentModel)
+    section=models.Attribute()
+    content = models.Attribute()
+    title=models.Attribute()
+    imgList=models.ListField(str)
+
+
+
+
+
+@app.route('/api/addContent.json', methods=['POST'])
+def addContent():
+    request_body = request.get_data()
+    request_data = json.loads(request_body)
+
+    token = request_data['token']
+    section = request_data['section']
+    content = request_data['content']
+    imgList = request_data['imgList']
+    title = request_data['title']
+    contentId = request_data['contentId']
+    userNow = UserModel.objects.filter(openid=token)[0]
+
+
+    Content=ContentModel(contentId=contentId)
+    Content.title=title
+    Content.section=section
+    Content.content=content
+    Content.imgList.extend(imgList)
+    Content.author=userNow
+    Content.save()
+    return jsonify({'success': True, 'ret_code': '', 'data': {'token': token, 'content': Content.attributes_dict}})
+
+
+
+
+@app.route('/api/getContent.json', methods=['GET'])
+def getContent():
+    section = request.args.get('section').encode('utf-8')
+    ContentList = ContentModel.objects.filter(section=section)
+    ret_data=[]
+    app.logger.debug(ContentList)
+    for n in ContentList:
+        dataOne=n.attributes_dict
+        dataOne['commentCnt']=len(n.comentList)
+        ret_data.append(dataOne)
+    return jsonify({'success': True, 'ret_code': '', 'data': { 'content': ret_data}})
+
+
+
+
+
+
+@app.route('/api/getContentDetail.json', methods=['POST'])
+def getContentDetail():
+    request_body = request.get_data()
+    request_data = json.loads(request_body)
+
+    contentId = request_data['contentId']
+    Content =  ContentModel.objects.filter(contentId=contentId)[0]
+
+    return jsonify({'success': True, 'ret_code': '', 'data': {'content': Content.attributes_dict}})
+
+
+    
+
+	
+	
 if __name__ == '__main__':
 #     app.run(host='0.0.0.0',ssl_context='adhoc')
     from gevent import pywsgi
