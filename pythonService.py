@@ -359,7 +359,6 @@ def chat_text(message):
             room.users.append(userInfo.openid)
             room.save()
         room_members_cnt=len(room.users)+1
-        app.logger.debug(room)
         
     else:
         room=RoomModel(roomId=room_id)
@@ -375,17 +374,16 @@ def chat_text(message):
     ret_data['type']=message['type']
     ret_data['roomId']=message['roomId']
 
-    app.logger.debug(ret_data)
 
     socketio.emit('text', ret_data,room=room_id)
 
 if __name__ == '__main__':
 #     app.run(host='0.0.0.0',ssl_context='adhoc')
-#     from gevent import pywsgi
-#     from geventwebsocket.handler import WebSocketHandler
+    from gevent import pywsgi
+    from geventwebsocket.handler import WebSocketHandler
 
 
-#     server = pywsgi.WSGIServer(('', 8888), app, handler_class=WebSocketHandler)
-#     server.serve_forever()
+    server = pywsgi.WSGIServer(('', 8888), app, handler_class=WebSocketHandler)
+    server.serve_forever()
 
-    socketio.run(app, host='0.0.0.0', port=8888, debug=True)
+#     socketio.run(app, host='0.0.0.0', port=8888, debug=True)
