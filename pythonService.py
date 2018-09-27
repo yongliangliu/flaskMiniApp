@@ -47,7 +47,7 @@ def getAllAppointMentFromRedis(type,area):
     now=int(time.time())
     for n in ret_data:
         gmtCreate=time.mktime(time.strptime(n['gmt_create'],'%Y-%m-%d %H:%M:%S'))
-        if 'expiryDate' not in ret_data.keys():
+        if 'expiryDate' not in n.keys():
             if now<gmtCreate+3600*24*2:
                 ret_data_new.append(n)
         elif n['expiryDate']!='':
