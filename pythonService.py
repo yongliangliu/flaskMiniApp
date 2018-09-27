@@ -45,6 +45,7 @@ def getAllAppointMentFromRedis(type,area):
     
     ret_data=sorted(ret_data, key=lambda student: student['gmt_create'],reverse=True)
     now=int(time.time())
+    ret_data_new=[]
     for n in ret_data:
         gmtCreate=time.mktime(time.strptime(n['gmt_create'],'%Y-%m-%d %H:%M:%S'))
         if 'expiryDate' not in n.keys():
