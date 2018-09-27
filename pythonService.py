@@ -44,8 +44,21 @@ def getAllAppointMentFromRedis(type,area):
                         ret_data.append(data_one)
     
     ret_data=sorted(ret_data, key=lambda student: student['gmt_create'],reverse=True)
+    now=int(time.time())
+    for n in ret_data:
+        gmtCreate=time.strptime(n['gmt_create'],fmt='%Y-%m-%d %H:%M:%S')
+        if 'expiryDate' not in ret_data.keys():
+            if now<gmtCreate+3600*24*2:
+                ret_data_new.append(n)
+        elif n['expiryDate']!='':
+            expiryDate=time.strptime(n['expiryDate'],fmt='%Y-%m-%d')
+            if now<expiryDate:
+                ret_data_new.append(n)
+        else:
+            if now<gmtCreate+3600*24*2:
+                ret_data_new.append(n)
       
-    return ret_data
+    return ret_data_new
 
 def add(content, redisName):
     content = content.decode('utf-8')
