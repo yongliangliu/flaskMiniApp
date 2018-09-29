@@ -1,2 +1,0 @@
-nohup: 忽略输入
-nohup: 无法运行命令"cd /home/lyl/pythonService/ && gunicorn --certfile=2_lyl.qianqiulin.com.crt --keyfile=3_lyl.qianqiulin.com.key -w 4 -b 0.0.0.0:443 pythonService:app": 没有那个文件或目录
