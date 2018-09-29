@@ -469,7 +469,7 @@ def getContentDetail():
 
 
 @app.route('/getPassenger1.json', methods=['GET'])
-def getPassenger():
+def getPassenger1():
     area = request.args.get('area')
     ret_data={}
     ret_data['success']='true'
