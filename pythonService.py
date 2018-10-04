@@ -468,13 +468,6 @@ def getContentDetail():
     return jsonify({'success': True, 'ret_code': '', 'data': {'content': Content.attributes_dict}})
 
 
-@app.route('/getPassenger1.json', methods=['GET'])
-def getPassenger1():
-    area = request.args.get('area')
-    ret_data={}
-    ret_data['success']='true'
-    ret_data['data']=getAllAppointMentFromRedis('passenger',area=area)
-    return json.dumps(ret_data, ensure_ascii=False) ,{'Content-Type': 'application/json'}
 
 	
 	
