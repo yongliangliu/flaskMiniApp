@@ -392,10 +392,10 @@ def chat_text(message):
     socketio.emit('text', ret_data,room=room_id)
 
 
-class commentModel(models.Model):
-    comentType=models.Attribute()
+class CommentModel(models.Model):
     author = models.Attribute()
     message = models.Attribute()
+    contentId=models.Attribute()
     gmtCreate = models.DateTimeField(auto_now_add=True)
 
 
@@ -404,11 +404,11 @@ class ContentModel(models.Model):
     contentId=models.Attribute()
     gmtCreate = models.DateTimeField(auto_now_add=True)
     author = UserModel
-    comentList=models.ListField(commentModel)
     section=models.Attribute()
     content = models.Attribute()
     title=models.Attribute()
     imgList=models.ListField(str)
+
 
 
 
@@ -468,6 +468,20 @@ def getContentDetail():
     return jsonify({'success': True, 'ret_code': '', 'data': {'content': Content.attributes_dict}})
 
 
+@app.route('/api/getCommnetDetail.json', methods=['POST'])
+def getCommnetDetail():
+    request_body = request.get_data()
+    request_data = json.loads(request_body)
+
+    contentId = request_data['contentId']
+    Content =  CommentModel.objects.filter(contentId=contentId)
+
+    comments=[]
+    for n in Content:
+    	commentOne=n.attributes_dict
+    	comments.append(commentOne)
+
+    return jsonify({'success': True, 'ret_code': '', 'data': {'comments': comments}})
 
 	
 	
