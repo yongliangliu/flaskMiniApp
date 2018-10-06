@@ -397,6 +397,7 @@ class CommentModel(models.Model):
     message = models.Attribute()
     contentId=models.Attribute()
     commentId=models.Attribute()
+    commentTo=models.Attribute()
     gmtCreate = models.DateTimeField(auto_now_add=True)
 
 
