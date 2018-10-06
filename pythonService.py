@@ -485,6 +485,33 @@ def getCommnetDetail():
 
     return jsonify({'success': True, 'ret_code': '', 'data': {'comments': comments}})
 
+
+@app.route('/api/addCommnetDetail.json', methods=['POST'])
+def addCommnetDetail():
+    request_body = request.get_data()
+    request_data = json.loads(request_body)
+
+
+
+    token = request_data['token']
+    message = request_data['message']
+    content = request_data['content']
+    contentId = request_data['contentId']
+    commentId = request_data['commentId']
+    commentTo = request_data['commentTo']
+    commentToInfo=UserModel.objects.filter(openid=commentToInfo)[0]
+    userNow = UserModel.objects.filter(openid=token)[0]
+
+
+    Content=ContentModel(commentId=commentId)
+    Content.contentId=contentId
+    Content.message=message
+    Content.content=content
+    Content.content=content
+    Content.commentTo=commentToInfo
+    Content.save()
+    return jsonify({'success': True, 'ret_code': '', 'data': {'token': token, 'comment': Content.attributes_dict}})
+
 	
 	
 if __name__ == '__main__':
