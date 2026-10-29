@@ -17,8 +17,7 @@ bind = '0.0.0.0:443'
 bind ='127.0.0.1:8888'
 pidfile = 'log/gunicorn.pid'
 logfile = 'log/debug.log'
-#certfile = './2_lyl.qianqiulin.com.crt'
-#keyfile = '3_lyl.qianqiulin.com.key'
+# Configure TLS at the reverse proxy; never store private keys in this repository.
 
 chdir = '/home/lyl/pythonService'
 

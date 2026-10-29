@@ -9,16 +9,21 @@ from PIL import Image,ImageDraw,ImageFont
 from redisco import models
 import redisco
 import requests
+from runtime_config import load_config
 from flask_socketio import SocketIO, rooms, join_room, leave_room
 
 
-redisco.connection_setup(host='qianqiulin.com', port=6379, password='12345678')
+_config = load_config()
+redis_options = {"host": _config["redis_host"],
+                 "port": _config["redis_port"],
+                 "password": _config["redis_password"]}
+redisco.connection_setup(**redis_options)
 
 
 app = Flask(__name__)
 socketio = SocketIO(app)
 
-r = redis.Redis(host='127.0.0.1', port=6379, password='12345678')
+r = redis.Redis(**redis_options)
 
 
 def md5(strs):
@@ -212,8 +217,8 @@ def login():
 
     if not userNow:
         JSCODE = request_data['code']
-        APPID = 'wx17bb70bf8838e26a'
-        SECRET = 'f0535a7ebe9e43e0b9584d613d59e814'
+        APPID = _config["miniapp_app_id"]
+        SECRET = _config["miniapp_secret"]
         url = 'https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code' % (
             APPID, SECRET, JSCODE)
 

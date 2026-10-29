@@ -1,1 +1,10 @@
-*.pyc
+__pycache__/
+*.py[cod]
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+log/
